@@ -38,7 +38,7 @@ install_nginx(){
     yum install -y libtool perl-core zlib-devel gcc wget pcre* unzip
     wget https://www.openssl.org/source/old/1.1.1/openssl-1.1.1a.tar.gz
     tar xzvf openssl-1.1.1a.tar.gz
-    
+
     mkdir /etc/nginx
     mkdir /etc/nginx/ssl
     mkdir /etc/nginx/conf.d
@@ -47,12 +47,12 @@ install_nginx(){
     cd nginx-1.15.8
     ./configure --prefix=/etc/nginx --with-openssl=../openssl-1.1.1a --with-openssl-opt='enable-tls1_3' --with-http_v2_module --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-stream --with-stream_ssl_module
     make && make install
-    
+
     green "======================"
     green " 输入解析到此VPS的域名"
     green "======================"
     read domain
-    
+
 cat > /etc/nginx/conf/nginx.conf <<-EOF
 user  root;
 worker_processes  1;
@@ -101,19 +101,19 @@ EOF
         --key-file   /etc/nginx/ssl/$domain.key \
         --fullchain-file /etc/nginx/ssl/fullchain.cer \
         --reloadcmd  "/etc/nginx/sbin/nginx -s reload"
-	
+
 cat > /etc/nginx/conf.d/default.conf<<-EOF
-server { 
+server {
     listen       80;
     server_name  $domain;
-    rewrite ^(.*)$  https://\$host\$1 permanent; 
+    rewrite ^(.*)$  https://\$host\$1 permanent;
 }
 server {
     listen 443 ssl http2;
     server_name $domain;
     root /etc/nginx/html;
     index index.php index.html;
-    ssl_certificate /etc/nginx/ssl/fullchain.cer; 
+    ssl_certificate /etc/nginx/ssl/fullchain.cer;
     ssl_certificate_key /etc/nginx/ssl/$domain.key;
     #TLS 版本控制
     ssl_protocols   TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
@@ -127,7 +127,7 @@ server {
     #access_log /var/log/nginx/access.log combined;
     location /mypath {
         proxy_redirect off;
-        proxy_pass http://127.0.0.1:11234; 
+        proxy_pass http://127.0.0.1:11234;
         proxy_http_version 1.1;
         proxy_set_header Upgrade \$http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -141,9 +141,10 @@ EOF
 }
 #安装v2ray
 install_v2ray(){
-    
+
+    mkdir /etc/v2ray/
     yum install -y wget
-    bash <(curl -L -s https://install.direct/go.sh)  
+    bash <(curl -L -s https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh)
     cd /etc/v2ray/
     rm -f config.json
     wget https://raw.githubusercontent.com/atrandys/v2ray-ws-tls/master/config.json
@@ -159,7 +160,7 @@ install_v2ray(){
     /etc/nginx/sbin/nginx -s stop
     /etc/nginx/sbin/nginx
     systemctl restart v2ray.service
-    
+
     #增加自启动脚本
 cat > /etc/rc.d/init.d/autov2ray<<-EOF
 #!/bin/sh
@@ -191,7 +192,7 @@ EOF
 clear
 green
 green "安装已经完成"
-green 
+green
 green "===========配置参数============"
 green "地址：${domain}"
 green "端口：443"
@@ -202,7 +203,7 @@ green "传输协议：ws"
 green "别名：myws"
 green "路径：${newpath}"
 green "底层传输：tls"
-green 
+green
 }
 
 remove_v2ray(){
@@ -210,13 +211,13 @@ remove_v2ray(){
     /etc/nginx/sbin/nginx -s stop
     systemctl stop v2ray.service
     systemctl disable v2ray.service
-    
+
     rm -rf /usr/bin/v2ray /etc/v2ray
     rm -rf /etc/v2ray
     rm -rf /etc/nginx
-    
+
     green "nginx、v2ray已删除"
-    
+
 }
 
 start_menu(){
@@ -239,10 +240,10 @@ start_menu(){
     install_v2ray
     ;;
     2)
-    bash <(curl -L -s https://install.direct/go.sh)  
+    bash <(curl -L -s https://install.direct/go.sh)
     ;;
     3)
-    remove_v2ray 
+    remove_v2ray
     ;;
     0)
     exit 1
