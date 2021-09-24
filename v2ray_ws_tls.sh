@@ -96,7 +96,9 @@ EOF
     /etc/nginx/sbin/nginx
 
     curl https://get.acme.sh | sh
-    ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /etc/nginx/html/
+    ~/.acme.sh/acme.sh --set-default-ca  --server zerossl
+    ~/.acme.sh/acme.sh --register-account -m candyanyme@gmail.com --server zerossl
+    ~/.acme.sh/acme.sh  --issue  -d $domain  --webroot /etc/nginx/html/ --server zerossl
     ~/.acme.sh/acme.sh  --installcert  -d  $domain   \
         --key-file   /etc/nginx/ssl/$domain.key \
         --fullchain-file /etc/nginx/ssl/fullchain.cer \
